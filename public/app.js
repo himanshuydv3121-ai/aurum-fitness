@@ -189,7 +189,9 @@
   window.requestAnimationFrame(frame);
 
   /* ---------- tilt + spotlight cards ---------- */
-  qa('[data-tilt]').forEach(function (el) {
+  function bindTilt(el) {
+    if (el._tilt) return;
+    el._tilt = true;
     el.addEventListener('pointermove', function (e) {
       if (e.pointerType === 'touch') return;
       var r = el.getBoundingClientRect();
@@ -201,7 +203,8 @@
       }
     });
     el.addEventListener('pointerleave', function () { el.style.transform = ''; });
-  });
+  }
+  qa('[data-tilt]').forEach(bindTilt);
 
   /* ---------- reveal on scroll + counters ---------- */
   function countUp(el) {
@@ -219,8 +222,9 @@
     window.requestAnimationFrame(step);
   }
 
+  var io = null;
   if ('IntersectionObserver' in window) {
-    var io = new IntersectionObserver(function (entries) {
+    io = new IntersectionObserver(function (entries) {
       entries.forEach(function (en) {
         if (!en.isIntersecting) return;
         var el = en.target;
@@ -230,14 +234,49 @@
         window.setTimeout(function () { el.classList.remove('reveal', 'in'); }, 1500);
       });
     }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
-    qa('.reveal').forEach(function (el, i) {
-      if (!el.style.getPropertyValue('--d')) el.style.setProperty('--d', ((i % 4) * 0.08).toFixed(2) + 's');
+  }
+  function observeNew(scope) {
+    var els = (scope || document).querySelectorAll('.reveal:not([data-obs]), [data-count]:not([data-obs])');
+    Array.prototype.forEach.call(els, function (el, i) {
+      el.setAttribute('data-obs', '1');
+      if (!io) { el.classList.remove('reveal'); return; }
+      if (el.classList.contains('reveal') && !el.style.getPropertyValue('--d')) {
+        el.style.setProperty('--d', ((i % 4) * 0.08).toFixed(2) + 's');
+      }
       io.observe(el);
     });
-    qa('[data-count]').forEach(function (el) { io.observe(el); });
-  } else {
-    qa('.reveal').forEach(function (el) { el.classList.remove('reveal'); });
   }
+  observeNew(document);
+
+  /* ---------- tiny DOM helper, shared with content.js and pages.js ---------- */
+  function h(tag, attrs, kids) {
+    var el = document.createElement(tag);
+    Object.keys(attrs || {}).forEach(function (k) {
+      var v = attrs[k];
+      if (v === null || v === undefined || v === false) return;
+      if (k === 'class') el.className = v;
+      else if (k === 'text') el.textContent = v;
+      else if (k.slice(0, 2) === 'on') el.addEventListener(k.slice(2), v);
+      else el.setAttribute(k, v === true ? '' : String(v));
+    });
+    (kids || []).forEach(function (c) {
+      if (c === null || c === undefined || c === false) return;
+      el.appendChild(typeof c === 'object' ? c : document.createTextNode(String(c)));
+    });
+    return el;
+  }
+
+  window.AURUM = {
+    h: h,
+    // Call after inserting new cards or buttons so they get the same effects as the rest of the page.
+    refresh: function (scope) {
+      mags = qa('[data-magnetic]');
+      depths = qa('[data-depth]');
+      spots = qa('[data-spot]');
+      qa('[data-tilt]').forEach(bindTilt);
+      observeNew(scope);
+    }
+  };
 
   /* ---------- nav ---------- */
   var menu = document.querySelector('.menu-btn'), nav = document.getElementById('nav');
@@ -264,18 +303,18 @@
   window.addEventListener('pageshow', function () { root.classList.remove('leaving'); });
 
   /* ---------- programs filter ---------- */
-  var chips = qa('[data-filter]'), items = qa('[data-cat]'), counter = document.getElementById('count');
-  chips.forEach(function (chip) {
-    chip.addEventListener('click', function () {
-      var f = chip.getAttribute('data-filter'), n = 0;
-      chips.forEach(function (c) { c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
-      items.forEach(function (it) {
-        var show = f === 'all' || it.getAttribute('data-cat') === f;
-        it.hidden = !show;
-        if (show) { n++; it.classList.remove('pop'); void it.offsetWidth; it.classList.add('pop'); }
-      });
-      if (counter) counter.textContent = n + (n === 1 ? ' program' : ' programs');
+  var counter = document.getElementById('count');
+  document.addEventListener('click', function (e) {
+    var chip = e.target.closest && e.target.closest('[data-filter]');
+    if (!chip) return;
+    var f = chip.getAttribute('data-filter'), n = 0;
+    qa('[data-filter]').forEach(function (c) { c.setAttribute('aria-pressed', c === chip ? 'true' : 'false'); });
+    qa('[data-cat]').forEach(function (it) {
+      var show = f === 'all' || it.getAttribute('data-cat') === f;
+      it.hidden = !show;
+      if (show) { n++; it.classList.remove('pop'); void it.offsetWidth; it.classList.add('pop'); }
     });
+    if (counter) counter.textContent = n + (n === 1 ? ' program' : ' programs');
   });
 
   /* ---------- pricing toggle ---------- */
@@ -311,17 +350,4 @@
       } else { selectText(); }
     });
   });
-
-  /* ---------- visit form (demo) ---------- */
-  var form = document.getElementById('visit-form');
-  if (form) {
-    form.addEventListener('submit', function (e) {
-      e.preventDefault();
-      var note = document.getElementById('form-note');
-      var first = (form.elements.fullname.value || '').trim().split(/\s+/)[0] || 'there';
-      note.textContent = 'Thank you, ' + first + '. This is a portfolio demo, so nothing was sent.';
-      note.hidden = false;
-      form.reset();
-    });
-  }
 })();

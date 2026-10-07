@@ -504,3 +504,42 @@ details p { padding-bottom: 1.5rem; color: var(--mute); }
   .js .reveal { opacity: 1 !important; transform: none !important; }
   .mq-track { animation: none; }
 }
+
+/* ---------- member area, checkout, admin ---------- */
+.narrow { width: min(760px, 100% - 2rem); margin-inline: auto; }
+.stack-lg { display: grid; gap: 2rem; align-content: start; }
+.stack-lg > * { min-width: 0; }
+.form.one-col { grid-template-columns: 1fr; }
+.hint { font-size: 0.78rem; color: var(--mute); }
+.hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.form-note.is-error { border-color: #d98b7a; color: #f3b9ac; background: rgba(217, 139, 122, 0.08); }
+.narrow > .form-note { margin-top: 1.5rem; }
+.wrap-cell { white-space: normal; min-width: 14rem; max-width: 22rem; }
+
+.pill {
+  display: inline-block;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--line);
+  font: 700 0.6rem/1 var(--body);
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--mute);
+}
+.pill--active, .pill--paid { color: #a9d39a; border-color: rgba(169, 211, 154, 0.5); background: rgba(169, 211, 154, 0.08); }
+.pill--pending, .pill--new { color: var(--gold-hi); border-color: var(--gold); background: rgba(214, 178, 94, 0.08); }
+.pill--expired, .pill--failed, .pill--cancelled { color: #f3b9ac; border-color: rgba(217, 139, 122, 0.55); background: rgba(217, 139, 122, 0.08); }
+
+.mini-select {
+  background: var(--coal);
+  color: var(--bone);
+  border: 1px solid var(--line);
+  padding: 0.5rem 0.6rem;
+  font: 600 0.75rem/1 var(--body);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+.mini-select:disabled { opacity: 0.5; }
+#admin-root .stats { grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+#admin-root .stat:nth-child(odd) { border-left: 1px solid var(--line-soft); padding-left: 1.5rem; }
+#admin-root .stat:first-child { border-left: 0; padding-left: 0; }
+.chip:disabled, .btn:disabled { opacity: 0.55; cursor: not-allowed; }
