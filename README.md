@@ -26,7 +26,8 @@ A multi-page luxury gym website with a working backend, built as a full-stack po
 
 ```
 public/        the website (static files)
-api/           one file per endpoint
+api/           serverless functions (5 files, grouped to fit Vercel's Hobby limit of 12)
+lib/routes/    the individual endpoint handlers behind those functions
 lib/           database, request handling, auth, validation, payments
 db/            schema.sql, seed content, migrate and seed scripts
 tests/         integration tests

@@ -1,17 +1,57 @@
 {
   "outputDirectory": "public",
   "functions": {
-    "api/**/*.js": { "maxDuration": 10 }
+    "api/**/*.js": {
+      "maxDuration": 10
+    }
   },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
-        { "key": "Permissions-Policy", "value": "camera=(), microphone=(), geolocation=()" }
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/programs",
+      "destination": "/api/content?action=programs"
+    },
+    {
+      "source": "/api/trainers",
+      "destination": "/api/content?action=trainers"
+    },
+    {
+      "source": "/api/plans",
+      "destination": "/api/content?action=plans"
+    },
+    {
+      "source": "/api/auth/:action",
+      "destination": "/api/auth?action=:action"
+    },
+    {
+      "source": "/api/payments/:action",
+      "destination": "/api/payments?action=:action"
+    },
+    {
+      "source": "/api/admin/:action",
+      "destination": "/api/admin?action=:action"
     }
   ]
 }

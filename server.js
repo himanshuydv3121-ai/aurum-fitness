@@ -21,11 +21,26 @@ const TYPES = {
   '.json': 'application/json; charset=utf-8',
 };
 
+// Mirrors the rewrites in vercel.json so local URLs match production.
+function rewrite(pathname, search) {
+  let m = pathname.match(/^\/api\/(programs|trainers|plans)\/?$/);
+  if (m) return { pathname: '/api/content', search: 'action=' + m[1] + (search ? '&' + search : '') };
+  m = pathname.match(/^\/api\/(auth|payments|admin)\/([a-z]+)\/?$/);
+  if (m) return { pathname: '/api/' + m[1], search: 'action=' + m[2] + (search ? '&' + search : '') };
+  return { pathname, search };
+}
+
 function createServer() {
   return http.createServer(async (req, res) => {
     let pathname;
     try {
-      pathname = decodeURIComponent(new URL(req.url, 'http://localhost').pathname);
+      const u = new URL(req.url, 'http://localhost');
+      pathname = decodeURIComponent(u.pathname);
+      if (pathname.startsWith('/api/')) {
+        const r = rewrite(pathname, u.search.replace(/^\?/, ''));
+        pathname = r.pathname;
+        req.url = r.pathname + (r.search ? '?' + r.search : '');
+      }
     } catch (e) {
       res.statusCode = 400;
       return res.end('Bad request');
