@@ -94,3 +94,94 @@ create table if not exists rate_limits (
   window_start timestamptz not null,
   count int not null
 );
+
+-- ---------------------------------------------------------------------------
+-- v2: owner-editable site, class booking, newsletter, email, password reset
+-- Everything below is safe to run more than once.
+-- ---------------------------------------------------------------------------
+
+-- Text edits made on the live site and all admin settings. Only values that differ from the
+-- defaults built into the page templates are stored here.
+create table if not exists site_content (
+  key text primary key,
+  value text not null,
+  updated_at timestamptz not null default now()
+);
+
+alter table members add column if not exists phone text;
+alter table members add column if not exists active boolean not null default true;
+
+alter table programs add column if not exists days text not null default '';
+alter table programs add column if not exists start_time text not null default '';
+alter table programs add column if not exists capacity int not null default 6;
+alter table programs add column if not exists featured boolean not null default false;
+alter table programs add column if not exists active boolean not null default true;
+
+alter table trainers add column if not exists photo text not null default '';
+alter table trainers add column if not exists active boolean not null default true;
+
+alter table plans add column if not exists active boolean not null default true;
+
+alter table payments add column if not exists provider_payment_id text;
+
+alter table bookings add column if not exists notes text not null default '';
+
+create table if not exists class_sessions (
+  id uuid primary key default gen_random_uuid(),
+  program_slug text not null references programs (slug) on delete cascade,
+  starts_at timestamptz not null,
+  capacity int not null check (capacity >= 0),
+  notes text not null default '',
+  cancelled boolean not null default false,
+  generated boolean not null default false,
+  unique (program_slug, starts_at)
+);
+create index if not exists class_sessions_start_idx on class_sessions (starts_at);
+
+create table if not exists class_bookings (
+  id uuid primary key default gen_random_uuid(),
+  session_id uuid not null references class_sessions (id) on delete cascade,
+  member_id uuid not null references members (id) on delete cascade,
+  status text not null default 'confirmed' check (status in ('confirmed', 'cancelled')),
+  created_at timestamptz not null default now(),
+  cancelled_at timestamptz
+);
+create unique index if not exists class_bookings_active_key on class_bookings (session_id, member_id) where status = 'confirmed';
+create index if not exists class_bookings_member_idx on class_bookings (member_id, created_at desc);
+
+create table if not exists subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  token text not null,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+create unique index if not exists subscribers_email_key on subscribers (lower(email));
+
+-- Every email the site sends or tries to send. Without SMTP configured, messages are only logged here.
+create table if not exists outbox (
+  id uuid primary key default gen_random_uuid(),
+  to_addr text not null,
+  subject text not null,
+  body text not null,
+  kind text not null default '',
+  status text not null default 'queued',
+  error text,
+  created_at timestamptz not null default now()
+);
+create index if not exists outbox_created_idx on outbox (created_at desc);
+
+create table if not exists password_resets (
+  token_hash text primary key,
+  member_id uuid not null references members (id) on delete cascade,
+  expires_at timestamptz not null,
+  used_at timestamptz
+);
+
+-- Uploaded images (trainer photos). Stored in Postgres because serverless hosting has no disk.
+create table if not exists media (
+  id uuid primary key default gen_random_uuid(),
+  content_type text not null,
+  data bytea not null,
+  created_at timestamptz not null default now()
+);

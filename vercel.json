@@ -50,6 +50,22 @@
       "destination": "/api/payments?action=:action"
     },
     {
+      "source": "/api/classes/:action",
+      "destination": "/api/classes?action=:action"
+    },
+    {
+      "source": "/api/newsletter/:action",
+      "destination": "/api/newsletter?action=:action"
+    },
+    {
+      "source": "/api/settings",
+      "destination": "/api/content?action=settings"
+    },
+    {
+      "source": "/media/:id",
+      "destination": "/api/media?id=:id"
+    },
+    {
       "source": "/api/admin/:action",
       "destination": "/api/admin?action=:action"
     }

@@ -1,12 +1,11 @@
 'use strict';
 const db = require('../lib/db');
 const v = require('../lib/validate');
+const settings = require('../lib/settings');
+const notify = require('../lib/notify');
 const { route, readJson, ipHash, HttpError } = require('../lib/http');
 
-const INTERESTS = ['Strength', 'Conditioning', 'Mind and Body', 'Recovery', 'Not sure yet'];
-const SLOTS = ['Morning, 05:00 to 09:00', 'Midday, 11:00 to 15:00', 'Evening, 17:00 to 21:00'];
-const PLANS = ['Essence', 'Aurum', 'Obsidian'];
-
+// Tour requests from the contact page. The choices offered on the form come from admin Settings.
 module.exports = route({
   POST: async (req) => {
     const body = await readJson(req);
@@ -17,12 +16,13 @@ module.exports = route({
       return { status: 201, body: { ok: true } };
     }
 
+    const s = await settings.settings();
     const fullName = v.str(body.fullname, 'Name', { min: 2, max: 100 });
     const email = v.email(body.email);
     const phone = v.phone(body.phone);
-    const interest = v.oneOf(body.interest, 'interest', INTERESTS);
-    const slot = v.oneOf(body.slot, 'time', SLOTS);
-    const plan = v.oneOf(body.plan, 'membership', PLANS, { required: false });
+    const interest = v.oneOf(body.interest, 'interest', settings.lines(s['cfg.interests']));
+    const slot = v.oneOf(body.slot, 'time', settings.lines(s['cfg.slots']));
+    const plan = v.str(body.plan, 'Membership', { required: false, max: 60 });
     const message = v.str(body.msg, 'Goals', { required: false, max: 1000 });
 
     const ip = ipHash(req);
@@ -35,6 +35,7 @@ module.exports = route({
        values ($1,$2,$3,$4,$5,$6,$7,$8) returning id`,
       [fullName, email, phone || null, interest, slot, plan || null, message || null, ip]
     );
+    await notify.tourRequest({ fullName, email, phone, interest, slot, plan, message }, req);
     return { status: 201, body: { ok: true, id: rows[0].id } };
   },
 });

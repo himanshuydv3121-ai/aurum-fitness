@@ -23,9 +23,11 @@ const TYPES = {
 
 // Mirrors the rewrites in vercel.json so local URLs match production.
 function rewrite(pathname, search) {
-  let m = pathname.match(/^\/api\/(programs|trainers|plans)\/?$/);
+  let m = pathname.match(/^\/api\/(programs|trainers|plans|settings)\/?$/);
   if (m) return { pathname: '/api/content', search: 'action=' + m[1] + (search ? '&' + search : '') };
-  m = pathname.match(/^\/api\/(auth|payments|admin)\/([a-z]+)\/?$/);
+  m = pathname.match(/^\/media\/([0-9a-f-]{36})\/?$/);
+  if (m) return { pathname: '/api/media', search: 'id=' + m[1] + (search ? '&' + search : '') };
+  m = pathname.match(/^\/api\/(auth|payments|admin|classes|newsletter)\/([a-z]+)\/?$/);
   if (m) return { pathname: '/api/' + m[1], search: 'action=' + m[2] + (search ? '&' + search : '') };
   return { pathname, search };
 }
@@ -36,7 +38,7 @@ function createServer() {
     try {
       const u = new URL(req.url, 'http://localhost');
       pathname = decodeURIComponent(u.pathname);
-      if (pathname.startsWith('/api/')) {
+      if (pathname.startsWith('/api/') || pathname.startsWith('/media/')) {
         const r = rewrite(pathname, u.search.replace(/^\?/, ''));
         pathname = r.pathname;
         req.url = r.pathname + (r.search ? '?' + r.search : '');

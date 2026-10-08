@@ -33,4 +33,17 @@ const plans = [
     []],
 ];
 
-module.exports = { programs, trainers, plans };
+// Weekly class pattern for each program: days (0 = Sunday ... 6 = Saturday), start time, seats, and
+// whether it is featured on the home page.
+const patterns = {
+  'iron-foundations': ['1,3,5', '06:00', 6, true],
+  'olympic-lifting-lab': ['2,4', '18:30', 6, false],
+  'zone-2-engine': ['0,1,2,3,4,5,6', '05:30', 8, true],
+  'threshold-intervals': ['2,6', '07:00', 8, false],
+  'slow-flow-mobility': ['0,1,2,3,4,5,6', '07:30', 12, false],
+  'reformer-pilates': ['1,2,3,4,5,6', '09:00', 8, false],
+  'cryo-and-contrast': ['1,2,3,4,5,6', '17:00', 3, true],
+  'sleep-and-breath-reset': ['0,1,2,3,4,5,6', '21:00', 10, false],
+};
+
+module.exports = { programs, trainers, plans, patterns };

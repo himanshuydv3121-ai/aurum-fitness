@@ -8,6 +8,7 @@
     "dev": "node server.js",
     "migrate": "node db/migrate.js",
     "seed": "node db/seed.js",
+    "admin:reset": "node db/admin-reset.js",
     "setup": "node db/seed.js",
     "vercel-build": "node db/seed.js",
     "test": "node --test"

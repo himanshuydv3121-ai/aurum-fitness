@@ -1,9 +1,21 @@
 'use strict';
 const { dispatch } = require('../lib/http');
+const m = require('../lib/routes/admin/manage');
 
 module.exports = dispatch({
-  overview: require('../lib/routes/admin/overview'),
-  bookings: require('../lib/routes/admin/bookings'),
-  members: require('../lib/routes/admin/members'),
-  payments: require('../lib/routes/admin/payments'),
+  overview: m.overview,
+  bookings: m.tourRequests,
+  members: m.members,
+  payments: m.payments,
+  programs: m.programs,
+  trainers: m.trainers,
+  plans: m.plans,
+  sessions: m.sessions,
+  classbookings: m.classBookings,
+  subscribers: m.subscribers,
+  outbox: m.outbox,
+  content: m.content,
+  settings: m.settingsRoute,
+  media: m.media,
+  export: m.exportRoute,
 });
