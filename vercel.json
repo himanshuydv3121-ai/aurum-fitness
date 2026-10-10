@@ -2,9 +2,6 @@
   "outputDirectory": "public",
   "functions": {
     "api/**/*.js": {
-      "maxDuration": 10
-    },
-    "api/page.js": {
       "maxDuration": 10,
       "includeFiles": "templates/**"
     }
