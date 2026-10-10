@@ -53,6 +53,7 @@ async function login(call, email, password) {
 }
 
 let admin, programSlug;
+const planSlugs = [];
 
 before(async () => {
   await migrate();
@@ -74,6 +75,7 @@ after(async () => {
     await db.query('delete from class_bookings where member_id in (select id from members where email like ' + like + ')');
     await db.query('delete from payments where member_id in (select id from members where email like ' + like + ')');
     await db.query('delete from members where email like ' + like);
+    for (const slug of planSlugs) await db.query('delete from plans where slug = $1', [slug]);
     if (programSlug) await db.query("delete from programs where slug = '" + programSlug + "'");
     await db.query("delete from site_content where key like 'cfg.%' or key like 'test.%'");
     await db.query("delete from subscribers where email like " + like);
@@ -249,4 +251,65 @@ test('image upload checks the file type and serves it back', async () => {
   assert.equal(Buffer.from(await got.arrayBuffer()).length, png.length);
   const bad = await admin('POST', '/api/admin/media', Buffer.from('<script>alert(1)</script>'), { 'Content-Type': 'image/png' });
   assert.equal(bad.status, 400);
+});
+
+test('hidden plans cannot be bought and huge prices are refused', async () => {
+  const plan = { name: 'Temp Plan ' + run, tag: 'Test', monthlyPrice: 1000, annualPrice: 900, featured: false, features: 'One', excluded: '' };
+  assert.equal((await admin('POST', '/api/admin/plans', Object.assign({}, plan, { monthlyPrice: 2000000 }))).status, 400);
+  const created = await admin('POST', '/api/admin/plans', plan);
+  assert.equal(created.status, 201, JSON.stringify(created.json));
+  const slug = created.json.slug;
+  planSlugs.push(slug);
+  const m = client();
+  const s = await m('POST', '/api/auth/signup', { fullName: 'Plan Buyer', email: 'buyer-' + run + '@example.com', password: 'member-pass-' + run });
+  assert.equal(s.status, 201);
+  const ok = await m('POST', '/api/payments/checkout', { plan: slug, billing: 'monthly' });
+  assert.equal(ok.status, 201, JSON.stringify(ok.json));
+  assert.equal(ok.json.payment.amountMinor, 100000);
+  const hide = await admin('PUT', '/api/admin/plans', Object.assign({ slug }, plan, { active: false }));
+  assert.equal(hide.status, 200, JSON.stringify(hide.json));
+  assert.equal((await m('POST', '/api/payments/checkout', { plan: slug, billing: 'monthly' })).status, 404);
+});
+
+test('live sites never default to the test payment provider', () => {
+  const pay = require('../lib/payments');
+  const keep = { p: process.env.PAYMENT_PROVIDER, v: process.env.VERCEL_ENV, n: process.env.NODE_ENV };
+  try {
+    delete process.env.PAYMENT_PROVIDER;
+    process.env.VERCEL_ENV = 'production';
+    assert.equal(pay.providerName(), 'offline');
+    delete process.env.VERCEL_ENV;
+    assert.equal(pay.providerName(), 'test');
+    process.env.PAYMENT_PROVIDER = 'razorpay';
+    assert.equal(pay.providerName(), 'razorpay');
+  } finally {
+    ['PAYMENT_PROVIDER', 'VERCEL_ENV', 'NODE_ENV'].forEach((k, i) => {
+      const val = [keep.p, keep.v, keep.n][i];
+      if (val === undefined) delete process.env[k]; else process.env[k] = val;
+    });
+  }
+});
+
+test('razorpay webhook: signature is checked against the raw body and settles the payment', async () => {
+  process.env.RAZORPAY_WEBHOOK_SECRET = 'whsec-' + run;
+  const m = client();
+  await m('POST', '/api/auth/signup', { fullName: 'Hook Member', email: 'hook-' + run + '@example.com', password: 'member-pass-' + run });
+  const me = (await db.query("select id from members where email = $1", ['hook-' + run + '@example.com'])).rows[0];
+  const plan = (await db.query('select slug from plans where active limit 1')).rows[0];
+  assert.ok(plan, 'needs at least one plan');
+  const orderId = 'order_' + run;
+  const p = await db.query(
+    "insert into payments (member_id, plan_slug, billing, amount_minor, currency, provider, provider_ref) values ($1,$2,'monthly',100000,'INR','razorpay',$3) returning id",
+    [me.id, plan.slug, orderId]
+  );
+  const raw = JSON.stringify({ event: 'payment.captured', payload: { payment: { entity: { id: 'pay_' + run, order_id: orderId } } } });
+  const sign = (body) => crypto.createHmac('sha256', process.env.RAZORPAY_WEBHOOK_SECRET).update(body).digest('hex');
+  const post = (body, sig) => fetch(base + '/api/payments/webhook', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Razorpay-Signature': sig }, body });
+  assert.equal((await post(raw, 'deadbeef')).status, 400);
+  assert.equal((await db.query('select status from payments where id = $1', [p.rows[0].id])).rows[0].status, 'pending');
+  assert.equal((await post(raw, sign(raw))).status, 200);
+  assert.equal((await db.query('select status from payments where id = $1', [p.rows[0].id])).rows[0].status, 'paid');
+  // Replaying the same event changes nothing.
+  assert.equal((await post(raw, sign(raw))).status, 200);
+  delete process.env.RAZORPAY_WEBHOOK_SECRET;
 });

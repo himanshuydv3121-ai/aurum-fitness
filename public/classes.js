@@ -23,7 +23,7 @@
     }
     btn.disabled = true;
     A.api('POST', '/api/classes/book', { sessionId: s.id }).then(function () {
-      A.show(status, 'You are booked into ' + s.programName + ' on ' + A.dateTime(s.startsAt, tz) + '. A confirmation email is on its way.');
+      A.show(status, 'You are booked into ' + s.programName + ' on ' + A.dateTime(s.startsAt, tz) +'.');
       return load().then(render);
     }).catch(function (err) {
       A.show(status, err.message, 'error');

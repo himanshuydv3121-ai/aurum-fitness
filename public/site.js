@@ -45,7 +45,7 @@
     return new Date(v).toLocaleDateString('en-IN', { weekday: 'long', day: 'numeric', month: 'long', timeZone: tz || undefined });
   };
   A.timeOnly = function (v, tz) {
-    return new Date(v).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz || undefined });
+    return new Date(v).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hourCycle: 'h23', timeZone: tz || undefined });
   };
   A.pill = function (status) { return h('span', { 'class': 'pill pill--' + status, text: status }); };
   A.show = function (el, text, kind) {

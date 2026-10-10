@@ -199,7 +199,7 @@
       var sec = h('div', { 'class': 'stack reveal' }, [h('h3', { text: 'Payment history' })]);
       if (!pays.length) sec.appendChild(h('p', { 'class': 'muted', text: 'No payments yet. Pick a plan to get started.' }));
       else sec.appendChild(A.table(['Date', 'Plan', 'Billing', 'Amount', 'Status', 'Reference'], pays.map(function (p) {
-        var ref = p.status === 'pending' ? h('a', { href: '/checkout?ref=' + encodeURIComponent(p.ref), text: p.ref }) : p.ref;
+        var ref = p.status === 'pending' ? h('a', { href: '/checkout?ref=' + encodeURIComponent(p.ref), text: 'Continue (' + p.ref + ')' }) : p.ref;
         return h('tr', null, [A.cell(A.date(p.createdAt)), A.cell(p.planName), A.cell(p.billing), A.cell(money(p.amountMinor, p.currency), 'num'), A.cell(A.pill(p.status)), A.cell(ref)]);
       })));
       root.appendChild(sec);
@@ -333,7 +333,7 @@
 
     api('GET', '/api/auth/me').then(function () {
       var ref = q.get('ref');
-      if (ref) return api('GET', '/api/payments/status?ref=' + encodeURIComponent(ref)).then(function (r) { renderPayment(r.payment); });
+      if (ref) return api('GET', '/api/payments/status?ref=' + encodeURIComponent(ref)).then(function (r) { renderPayment(r.payment, r.client); });
       var slug = q.get('plan');
       if (!slug) return go('/membership');
       return api('GET', '/api/plans').then(function (r) {

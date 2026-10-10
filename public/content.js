@@ -162,7 +162,7 @@
   if (page === 'contact') {
     var sel = document.getElementById('plan');
     if (sel) get('/api/plans').then(function (d) {
-      d.plans.forEach(function (p) { sel.appendChild(h('option', { value: p.name, text: p.name, selected: p.featured })); });
+      d.plans.forEach(function (p) { sel.appendChild(h('option', { value: p.name, text: p.name })); });
     }).catch(function () {});
   }
 })();
