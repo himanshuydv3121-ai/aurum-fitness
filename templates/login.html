@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+{{seo}}
+<link rel="stylesheet" href="/styles.css">
+{{theme}}
+</head>
+<body data-page="login">
+<script>document.documentElement.classList.add("js")</script>
+{{header}}
+<main>
+<section class="page-head" data-spot data-ghost="Member"><div class="wrap"><span class="eyebrow" data-c="login.1">Member area</span><h1 data-c="login.2">Sign in or join.</h1><p class="lead" data-c="login.3">Manage your membership, see your payments and book your next visit.</p></div></section>
+<section class="section"><div class="wrap narrow">
+<div class="filters" role="group" aria-label="Choose sign in or create account">
+<button class="chip" type="button" data-auth-tab="login" aria-pressed="true" data-c="login.4">Sign in</button>
+<button class="chip" type="button" data-auth-tab="signup" aria-pressed="false" data-c="login.5">Create account</button>
+</div>
+<form class="form one-col" id="login-form" novalidate>
+<div class="field full"><label for="login-email" data-c="login.6">Email</label><input id="login-email" name="email" type="email" autocomplete="email" required></div>
+<div class="field full"><label for="login-password" data-c="login.7">Password</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
+<div class="field full"><button class="btn" data-magnetic type="submit"><span data-c="login.8">Sign in</span> <span class="arr" data-c="login.9">&rarr;</span></button></div>
+<div class="field full"><button class="link-btn" type="button" data-show-forgot>Forgot your password?</button></div>
+</form>
+<form class="form one-col" id="forgot-form" novalidate hidden>
+<p class="muted full">Enter your email and we will send a link to choose a new password.</p>
+<div class="field full"><label for="forgot-email">Email</label><input id="forgot-email" name="email" type="email" autocomplete="email" required></div>
+<div class="field full"><button class="btn" data-magnetic type="submit">Send reset link</button></div>
+<div class="field full"><button class="link-btn" type="button" data-auth-tab-link="login">Back to sign in</button></div>
+</form>
+<form class="form one-col" id="reset-form" novalidate hidden>
+<p class="muted full">Choose a new password for your account.</p>
+<div class="field full"><label for="reset-password">New password</label><input id="reset-password" name="password" type="password" autocomplete="new-password" minlength="10" required><span class="hint">At least 10 characters.</span></div>
+<div class="field full"><button class="btn" data-magnetic type="submit">Save new password</button></div>
+</form>
+<form class="form one-col" id="signup-form" novalidate hidden>
+<div class="field full"><label for="su-name" data-c="login.10">Full name</label><input id="su-name" name="fullName" type="text" autocomplete="name" required></div>
+<div class="field full"><label for="su-email" data-c="login.11">Email</label><input id="su-email" name="email" type="email" autocomplete="email" required></div>
+<div class="field full"><label for="su-phone">Phone (optional)</label><input id="su-phone" name="phone" type="tel" autocomplete="tel"></div>
+<div class="field full"><label for="su-password" data-c="login.12">Password</label><input id="su-password" name="password" type="password" autocomplete="new-password" minlength="10" required><span class="hint" data-c="login.13">At least 10 characters.</span></div>
+<div class="field full"><button class="btn" data-magnetic type="submit"><span data-c="login.14">Create account</span> <span class="arr" data-c="login.15">&rarr;</span></button></div>
+</form>
+<p class="form-note" id="auth-note" role="alert" hidden></p>
+</div></section>
+</main>
+{{footer}}
+{{scripts}}
+</body>
+</html>

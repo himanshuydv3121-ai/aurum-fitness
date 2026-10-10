@@ -5,6 +5,11 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var TAU = Math.PI * 2;
 
+  // Theme colours come from the owner's settings (CSS variables), so the effects match the site.
+  var cs = window.getComputedStyle(document.documentElement);
+  var gold = (cs.getPropertyValue('--gold-rgb') || '214, 178, 94').trim();
+  var goldHi = (cs.getPropertyValue('--gold-hi-rgb') || '242, 217, 143').trim();
+
   function qa(sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); }
   function mk(cls) { var d = document.createElement('div'); d.className = cls; d.setAttribute('aria-hidden', 'true'); document.body.appendChild(d); return d; }
 
@@ -152,9 +157,9 @@
         p = parts[i];
         p.x += p.vx; p.y += p.vy; p.vx *= 0.97; p.vy *= 0.97; p.life -= p.decay;
         if (p.life <= 0) { parts.splice(i, 1); continue; }
-        ctx.fillStyle = 'rgba(214,178,94,' + (p.life * 0.16).toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(' + gold + ',' + (p.life * 0.16).toFixed(3) + ')';
         ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 3.2 * p.life, 0, TAU); ctx.fill();
-        ctx.fillStyle = 'rgba(242,217,143,' + (p.life * 0.85).toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(' + goldHi + ',' + (p.life * 0.85).toFixed(3) + ')';
         ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 0.6 * p.life + 0.4, 0, TAU); ctx.fill();
       }
       for (i = sparks.length - 1; i >= 0; i--) {
@@ -162,7 +167,7 @@
         p.x += p.vx; p.y += p.vy; p.vx *= 0.94; p.vy = p.vy * 0.94 + 0.06; p.life -= p.decay;
         if (p.life <= 0) { sparks.splice(i, 1); continue; }
         var sp = Math.sqrt(p.vx * p.vx + p.vy * p.vy) || 1;
-        ctx.strokeStyle = 'rgba(242,217,143,' + p.life.toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(' + goldHi + ',' + p.life.toFixed(3) + ')';
         ctx.lineWidth = 1.6 * p.life + 0.3;
         ctx.lineCap = 'round';
         ctx.beginPath();
@@ -176,9 +181,9 @@
         p.r += (p.max - p.r) * 0.09;
         p.life -= 0.026;
         if (p.life <= 0) { rings.splice(i, 1); continue; }
-        ctx.fillStyle = 'rgba(214,178,94,' + (p.life * 0.07).toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(' + gold + ',' + (p.life * 0.07).toFixed(3) + ')';
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.fill();
-        ctx.strokeStyle = 'rgba(242,217,143,' + (p.life * 0.9).toFixed(3) + ')';
+        ctx.strokeStyle = 'rgba(' + goldHi + ',' + (p.life * 0.9).toFixed(3) + ')';
         ctx.lineWidth = p.w * (0.4 + p.life);
         ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, TAU); ctx.stroke();
       }
@@ -268,6 +273,7 @@
 
   window.AURUM = {
     h: h,
+    qa: qa,
     // Call after inserting new cards or buttons so they get the same effects as the rest of the page.
     refresh: function (scope) {
       mags = qa('[data-magnetic]');
@@ -335,7 +341,8 @@
   }
 
   /* ---------- copy buttons ---------- */
-  qa('[data-copy]').forEach(function (btn) {
+  qa('.copy-btn').forEach(function (btn) {
+    function source() { var t = btn.previousElementSibling; return t ? t.textContent.trim() : ''; }
     function selectText() {
       var t = btn.previousElementSibling;
       if (!t || !window.getSelection) return;
@@ -346,7 +353,7 @@
       var label = btn.textContent;
       function done() { btn.textContent = 'Copied'; window.setTimeout(function () { btn.textContent = label; }, 1400); }
       if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(btn.getAttribute('data-copy')).then(done, selectText);
+        navigator.clipboard.writeText(source()).then(done, selectText);
       } else { selectText(); }
     });
   });

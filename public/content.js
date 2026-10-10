@@ -1,7 +1,6 @@
 (function () {
   'use strict';
-  // Replaces the built-in program, trainer and plan cards with live data from the API.
-  // If the API is unreachable the static cards already on the page stay as they are.
+  // Fills the program, trainer and plan areas with live data from the API.
   var A = window.AURUM;
   if (!A) return;
   var h = A.h;
@@ -40,48 +39,53 @@
     });
   }
 
-  function swap(id, nodes) {
+  function fill(id, nodes, emptyText) {
     var grid = document.getElementById(id);
-    if (!grid || !nodes.length) return null;
-    while (grid.firstChild) grid.removeChild(grid.firstChild);
+    if (!grid) return null;
+    A.clear(grid);
+    if (!nodes.length) {
+      grid.appendChild(h('p', { 'class': 'muted', text: emptyText }));
+      return grid;
+    }
     nodes.forEach(function (n) { grid.appendChild(n); });
     A.refresh(grid);
     return grid;
   }
 
-  function programCard(p) {
+  function programCard(p, wrap) {
     var dots = [];
     for (var i = 0; i < 5; i++) dots.push(h('i', { 'class': i < p.level ? 'on' : '' }));
-    return h('article', { 'class': 'card', 'data-tilt': true, 'data-cat': p.category }, [
+    var meta = [
+      h('span', null, [h('b', { text: p.duration })]),
+      h('span', { 'class': 'dots', role: 'img', 'aria-label': 'Intensity ' + p.level + ' of 5' }, dots)
+    ];
+    if (p.schedule) meta.push(h('span', { text: p.schedule }));
+    if (p.coach) meta.push(h('span', { text: 'Coach ' + p.coach }));
+    var card = h('article', { 'class': 'card', 'data-tilt': true, 'data-cat': p.category }, [
       icon(p.icon),
       h('span', { 'class': 'tag', text: p.categoryLabel }),
       h('h3', { text: p.name }),
       h('p', { text: p.description }),
-      h('div', { 'class': 'meta' }, [
-        h('span', null, [h('b', { text: p.duration })]),
-        h('span', { 'class': 'dots', role: 'img', 'aria-label': 'Intensity ' + p.level + ' of 5' }, dots),
-        h('span', { text: p.schedule }),
-        h('span', { text: 'Coach ' + p.coach })
-      ])
+      h('div', { 'class': 'meta' }, meta),
+      h('a', { 'class': 'link-arrow card-link', href: '/programs?program=' + encodeURIComponent(p.slug) + '#timetable', 'data-magnetic': true }, ['See class times ', h('span', { text: '→' })])
     ]);
+    return wrap ? h('div', { 'class': 'reveal' }, [card]) : card;
   }
 
   function trainerCard(t) {
-    var portrait = h('div', { 'class': 'portrait' }, [h('b', { text: t.initials })]);
+    var portrait = h('div', { 'class': 'portrait' }, t.photo ? [h('img', { src: t.photo, alt: t.name, loading: 'lazy' })] : [h('b', { text: t.initials })]);
     if (/^#[0-9a-f]{3,8}$/i.test(t.color)) portrait.style.setProperty('--c1', t.color);
     return h('article', { 'class': 'card trainer reveal', 'data-tilt': true }, [
       portrait,
       h('span', { 'class': 'tag', text: t.role }),
       h('h3', { text: t.name }),
       h('p', { text: t.bio }),
-      h('div', { 'class': 'meta' }, [h('span', null, [h('b', { text: t.cert })])])
+      t.cert ? h('div', { 'class': 'meta' }, [h('span', null, [h('b', { text: t.cert })])]) : null
     ]);
   }
 
-  function rupees(n) { return '₹' + Number(n).toLocaleString('en-IN'); }
-
   function planCard(p) {
-    var saving = Math.round((1 - p.annualPrice / p.monthlyPrice) * 100);
+    var saving = Math.max(0, Math.round((1 - p.annualPrice / p.monthlyPrice) * 100));
     var items = p.features.map(function (f) { return h('li', { text: f }); })
       .concat(p.excluded.map(function (f) { return h('li', { 'class': 'off', text: f }); }));
     return h('article', { 'class': 'card plan reveal' + (p.featured ? ' featured' : ''), 'data-tilt': true }, [
@@ -89,49 +93,76 @@
       h('span', { 'class': 'tag', text: p.tag }),
       h('h3', { text: p.name }),
       h('div', { 'class': 'price' }, [
-        h('b', { 'data-monthly': p.monthlyPrice, 'data-annual': p.annualPrice, text: rupees(p.monthlyPrice) }),
+        h('b', { 'data-monthly': p.monthlyPrice, 'data-annual': p.annualPrice, text: A.rupees(p.monthlyPrice) }),
         h('span', { 'data-per': true, text: 'per month' })
       ]),
-      h('p', { 'class': 'note', 'data-note': 'Save ' + saving + ' percent with annual billing' }),
+      h('p', { 'class': 'note', 'data-note': saving ? 'Save ' + saving + ' percent with annual billing' : '' }),
       h('a', {
         'class': 'btn' + (p.featured ? '' : ' btn--ghost'), 'data-magnetic': true, 'data-plan-link': p.slug,
-        href: 'checkout.html?plan=' + encodeURIComponent(p.slug) + '&billing=monthly', text: 'Choose ' + p.name
+        href: '/checkout?plan=' + encodeURIComponent(p.slug) + '&billing=monthly', text: 'Choose ' + p.name
       }),
       h('ul', null, items)
     ]);
   }
 
-  if (page === 'programs') {
+  if (page === 'programs' || page === 'index') {
     get('/api/programs').then(function (d) {
-      var grid = swap('programs-grid', d.programs.map(programCard));
-      if (!grid) return;
-      var c = document.getElementById('count');
-      if (c) c.textContent = d.programs.length + ' programs';
+      var list = d.programs;
+      if (page === 'index') {
+        var featured = list.filter(function (p) { return p.featured; });
+        fill('featured-grid', (featured.length ? featured : list.slice(0, 3)).map(function (p) { return programCard(p, true); }), 'Programs are coming soon.');
+        return;
+      }
+      fill('programs-grid', list.map(function (p) { return programCard(p); }), 'Programs are coming soon.');
+      // Filter chips follow whatever categories the owner has set up.
+      var chips = document.querySelector('.filters');
+      var seen = {};
+      list.forEach(function (p) {
+        if (seen[p.category]) return;
+        seen[p.category] = true;
+        chips.appendChild(h('button', { 'class': 'chip', type: 'button', 'data-filter': p.category, 'aria-pressed': 'false', text: p.categoryLabel }));
+      });
       var all = document.querySelector('[data-filter="all"]');
       if (all) all.click();
-    }).catch(function () { /* keep the static cards */ });
+    }).catch(function () {
+      var g = document.getElementById('programs-grid') || document.getElementById('featured-grid');
+      if (g) g.textContent = 'Programs could not be loaded. Please refresh.';
+    });
   }
 
   if (page === 'trainers') {
     get('/api/trainers').then(function (d) {
-      swap('trainers-grid', d.trainers.map(trainerCard));
-    }).catch(function () {});
+      fill('trainers-grid', d.trainers.map(trainerCard), 'Our coaches will be listed here soon.');
+    }).catch(function () {
+      var g = document.getElementById('trainers-grid');
+      if (g) g.textContent = 'Coaches could not be loaded. Please refresh.';
+    });
   }
 
   if (page === 'membership') {
     get('/api/plans').then(function (d) {
-      if (!swap('plans-grid', d.plans.map(planCard))) return;
+      if (!fill('plans-grid', d.plans.map(planCard), 'Plans are coming soon.')) return;
       var sw = document.getElementById('billing');
       if (!sw) return;
       var sync = function () {
         var billing = sw.getAttribute('aria-checked') === 'true' ? 'annual' : 'monthly';
         Array.prototype.forEach.call(document.querySelectorAll('[data-plan-link]'), function (a) {
-          a.setAttribute('href', 'checkout.html?plan=' + encodeURIComponent(a.getAttribute('data-plan-link')) + '&billing=' + billing);
+          a.setAttribute('href', '/checkout?plan=' + encodeURIComponent(a.getAttribute('data-plan-link')) + '&billing=' + billing);
         });
       };
       // app.js registered its own click handler first, so aria-checked is already updated here.
       sw.addEventListener('click', sync);
       sync();
+    }).catch(function () {
+      var g = document.getElementById('plans-grid');
+      if (g) g.textContent = 'Plans could not be loaded. Please refresh.';
+    });
+  }
+
+  if (page === 'contact') {
+    var sel = document.getElementById('plan');
+    if (sel) get('/api/plans').then(function (d) {
+      d.plans.forEach(function (p) { sel.appendChild(h('option', { value: p.name, text: p.name, selected: p.featured })); });
     }).catch(function () {});
   }
 })();

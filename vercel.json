@@ -3,6 +3,10 @@
   "functions": {
     "api/**/*.js": {
       "maxDuration": 10
+    },
+    "api/page.js": {
+      "maxDuration": 10,
+      "includeFiles": "templates/**"
     }
   },
   "headers": [
@@ -68,6 +72,103 @@
     {
       "source": "/api/admin/:action",
       "destination": "/api/admin?action=:action"
+    },
+    {
+      "source": "/",
+      "destination": "/api/page?name=index"
+    },
+    {
+      "source": "/about",
+      "destination": "/api/page?name=about"
+    },
+    {
+      "source": "/programs",
+      "destination": "/api/page?name=programs"
+    },
+    {
+      "source": "/trainers",
+      "destination": "/api/page?name=trainers"
+    },
+    {
+      "source": "/membership",
+      "destination": "/api/page?name=membership"
+    },
+    {
+      "source": "/contact",
+      "destination": "/api/page?name=contact"
+    },
+    {
+      "source": "/login",
+      "destination": "/api/page?name=login"
+    },
+    {
+      "source": "/account",
+      "destination": "/api/page?name=account"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/api/page?name=checkout"
+    },
+    {
+      "source": "/admin",
+      "destination": "/api/page?name=admin"
+    },
+    {
+      "source": "/unsubscribe",
+      "destination": "/api/page?name=unsubscribe"
     }
-  ]
+  ],
+  "redirects": [
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/about.html",
+      "destination": "/about",
+      "permanent": true
+    },
+    {
+      "source": "/programs.html",
+      "destination": "/programs",
+      "permanent": true
+    },
+    {
+      "source": "/trainers.html",
+      "destination": "/trainers",
+      "permanent": true
+    },
+    {
+      "source": "/membership.html",
+      "destination": "/membership",
+      "permanent": true
+    },
+    {
+      "source": "/contact.html",
+      "destination": "/contact",
+      "permanent": true
+    },
+    {
+      "source": "/login.html",
+      "destination": "/login",
+      "permanent": true
+    },
+    {
+      "source": "/account.html",
+      "destination": "/account",
+      "permanent": true
+    },
+    {
+      "source": "/checkout.html",
+      "destination": "/checkout",
+      "permanent": true
+    },
+    {
+      "source": "/admin.html",
+      "destination": "/admin",
+      "permanent": true
+    }
+  ],
+  "cleanUrls": false
 }

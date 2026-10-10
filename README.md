@@ -90,4 +90,10 @@ The tests run the real handlers and SQL against Postgres. Use a throwaway databa
 
 ## Going live with real payments
 
-The built-in provider is `test`. For real money, add Razorpay or Stripe in `lib/payments.js`: create an order with the provider, send the member to its hosted checkout, and mark the payment paid from a webhook after verifying the provider's signature. The confirm route is disabled automatically when `PAYMENT_PROVIDER` is not `test`.
+Set `PAYMENT_PROVIDER` to `test`, `offline` or `razorpay` (see `.env.example`). Razorpay orders are created server-side, the checkout signature is verified with HMAC, and a webhook (`/api/payments/webhook`) settles payments if the member closes the browser early. Razorpay has not been tested against the live service from this repository, so make one small real payment before launch.
+
+## Owner admin panel
+
+Sign in with the admin account and open `/admin`. The owner can manage tour requests, members, payments, programs (with weekly class times and seats), the timetable, class bookings, trainers (with photos), plans and prices, newsletter subscribers and broadcasts, sent emails, page text, and settings (brand name, colours, social links, booking rules, SEO titles). On any public page, the "Edit this page" button in the menu lets the owner click any text and change it in place. Edits reach visitors within about 15 to 30 seconds.
+
+Seed content is only written once, so redeploying never overwrites what the owner has changed.

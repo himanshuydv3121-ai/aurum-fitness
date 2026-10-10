@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+{{seo}}
+<link rel="stylesheet" href="/styles.css">
+{{theme}}
+</head>
+<body data-page="contact">
+<script>document.documentElement.classList.add("js")</script>
+{{header}}
+<main>
+<section class="page-head" data-spot data-ghost="Visit"><div class="wrap">
+<span class="eyebrow" data-c="contact.1">Contact</span><h1 data-c="contact.2">Book a private tour.</h1><p class="lead" data-c="contact.3">Tours take 30 minutes and finish with a trial session. Tell us when suits you.</p></div></section>
+<section class="section"><div class="wrap split">
+<form class="form reveal" id="visit-form" novalidate>
+<div class="field"><label for="fullname" data-c="contact.4">Full name</label><input id="fullname" name="fullname" type="text" autocomplete="name" required placeholder="Your name"></div>
+<div class="field"><label for="email" data-c="contact.5">Email</label><input id="email" name="email" type="email" autocomplete="email" required placeholder="you@example.com"></div>
+<div class="field"><label for="phone" data-c="contact.6">Phone</label><input id="phone" name="phone" type="tel" autocomplete="tel" placeholder="+91"></div>
+<div class="field"><label for="interest" data-c="contact.7">Interested in</label><select id="interest" name="interest">{{interest_options}}</select></div>
+<div class="field"><label for="slot" data-c="contact.8">Preferred time</label><select id="slot" name="slot">{{slot_options}}</select></div>
+<div class="field"><label for="plan" data-c="contact.9">Membership</label><select id="plan" name="plan"><option value="">Not sure yet</option></select></div>
+<div class="hp" aria-hidden="true"><label for="website" data-c="contact.10">Leave this field empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
+<div class="field full"><label for="msg" data-c="contact.11">Goals</label><textarea id="msg" name="msg" placeholder="Tell us what you want to train for"></textarea></div>
+<div class="field full"><button class="btn" data-magnetic type="submit"><span data-c="contact.12">Request a private tour</span> <span class="arr" data-c="contact.13">&rarr;</span></button></div>
+<p class="form-note" id="form-note" role="status" hidden></p>
+</form>
+<div class="info reveal">
+<div class="info-row"><h3 data-c="contact.14">Address</h3><p class="big"><span data-c="contact.15">Aurum Tower, Sector 54</span><br><span data-c="contact.16">Gurugram, Haryana</span></p></div>
+<div class="info-row"><h3 data-c="contact.17">Phone</h3><div class="copy-line"><span class="big" data-c="contact.18">+91 124 000 0000</span><button class="copy-btn" type="button" data-c="contact.19">Copy</button></div></div>
+<div class="info-row"><h3 data-c="contact.20">Email</h3><div class="copy-line"><span class="big" data-c="contact.21">hello@aurumfitness.example</span><button class="copy-btn" type="button" data-c="contact.22">Copy</button></div></div>
+<div class="info-row"><h3 data-c="contact.23">Hours</h3><dl class="hours"><div><dt data-c="contact.24">Monday to Saturday</dt><dd data-c="contact.25">04:30 to 23:00</dd></div><div><dt data-c="contact.26">Sunday</dt><dd data-c="contact.27">06:00 to 21:00</dd></div></dl></div>
+<svg class="map" viewBox="0 0 400 240" role="img" aria-label="Illustrative street map showing the club location">
+<g fill="none" stroke="currentColor" stroke-width="1" opacity=".35">
+<path d="M0 60h400M0 120h400M0 180h400M80 0v240M180 0v240M290 0v240"/>
+<path d="M0 220L400 20" stroke-width="2" opacity=".6"/>
+</g>
+<circle cx="230" cy="120" r="26" fill="none" stroke="currentColor" opacity=".35"/>
+<circle cx="230" cy="120" r="12" fill="none" stroke="currentColor" opacity=".7"/>
+<circle cx="230" cy="120" r="5" fill="#f2d98f"/>
+<text x="248" y="106" fill="#f2d98f" style="font:italic 500 18px 'Cormorant Garamond',serif">AURUM</text>
+<text x="14" y="228" fill="currentColor" opacity=".7" style="font:600 9px 'Manrope',sans-serif;letter-spacing:.2em">ILLUSTRATIVE MAP</text>
+</svg>
+</div>
+</div></section>
+</main>
+{{footer}}
+{{scripts}}
+</body>
+</html>

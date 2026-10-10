@@ -64,7 +64,13 @@ function createServer() {
       return require(file)(req, res);
     }
 
-    let rel = pathname === '/' ? '/index.html' : pathname;
+    // Pages are rendered by api/page.js, the same function Vercel runs.
+    const pageName = pathname === '/' ? 'index' : pathname.replace(/^\//, '').replace(/\/$/, '');
+    if (pageName === 'index' || /^(about|programs|trainers|membership|contact|login|account|checkout|admin|unsubscribe)$/.test(pageName)) {
+      req.url = '/api/page?name=' + pageName;
+      return require(path.join(API_DIR, 'page.js'))(req, res);
+    }
+    let rel = pathname;
     const file = path.join(PUBLIC_DIR, rel);
     if (!file.startsWith(PUBLIC_DIR + path.sep) || !fs.existsSync(file) || !fs.statSync(file).isFile()) {
       res.statusCode = 404;
