@@ -65,14 +65,18 @@ async function seed() {
   }
   if (adminPassword.length < 10) throw new Error('ADMIN_PASSWORD must be at least 10 characters.');
   const hash = await auth.hashPassword(adminPassword);
+  // Set ADMIN_FORCE_RESET=true for one deploy to overwrite the owner's password with ADMIN_PASSWORD (a lost password).
+  const forceReset = String(process.env.ADMIN_FORCE_RESET || '').toLowerCase() === 'true';
   // Create the owner account on the first deploy. An existing account keeps the password the owner
   // chose in the panel, so a redeploy never resets it. Run `npm run admin:reset` to force one.
   const { rows } = await db.query(
     `insert into members (email, full_name, password_hash, role) values ($1, 'AURUM Admin', $2, 'admin')
-     on conflict (lower(email)) do update set role = 'admin', active = true
+     on conflict (lower(email)) do update set role = 'admin', active = true,
+       password_hash = case when $3::boolean then excluded.password_hash else members.password_hash end
      returning id`,
-    [adminEmail, hash]
+    [adminEmail, hash, forceReset]
   );
+  if (forceReset) console.log('ADMIN_FORCE_RESET is on: the admin password was set from ADMIN_PASSWORD. Remove ADMIN_FORCE_RESET now.');
   console.log('Admin account ready for', adminEmail, '(' + rows[0].id + ')');
 }
 
