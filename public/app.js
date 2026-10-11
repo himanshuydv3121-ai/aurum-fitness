@@ -47,7 +47,8 @@
     window.addEventListener('resize', fit);
   }
 
-  var mags = qa('[data-magnetic]');
+  // Buttons no longer pull toward the cursor (the owner turned the magnetic effect off).
+  var mags = [];
   var depths = qa('[data-depth]');
   var spots = qa('[data-spot]');
 
@@ -276,7 +277,6 @@
     qa: qa,
     // Call after inserting new cards or buttons so they get the same effects as the rest of the page.
     refresh: function (scope) {
-      mags = qa('[data-magnetic]');
       depths = qa('[data-depth]');
       spots = qa('[data-spot]');
       qa('[data-tilt]').forEach(bindTilt);
