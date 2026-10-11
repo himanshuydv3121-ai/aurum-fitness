@@ -616,3 +616,10 @@ details p { padding-bottom: 1.5rem; color: var(--mute); }
 .adm-settings legend { padding: 0 0.6rem; font: 700 0.68rem/1 var(--body); letter-spacing: 0.22em; text-transform: uppercase; color: var(--gold); }
 .adm-settings input[type="color"] { height: 2.6rem; padding: 0.2rem; max-width: 8rem; }
 .adm-panel { min-width: 0; }
+
+/* Log in / My account: shown depending on whether a member is signed in (set by site.js). */
+.only-in { display: none !important; }
+html[data-signed-in] .only-in { display: inline-flex !important; }
+html[data-signed-in] .only-out { display: none !important; }
+.nav a.only-in { display: none !important; }
+html[data-signed-in] .nav a.only-in { display: inline !important; }
