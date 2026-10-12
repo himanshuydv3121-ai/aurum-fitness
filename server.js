@@ -78,7 +78,7 @@ function createServer() {
       return res.end('Not found');
     }
     res.setHeader('Content-Type', TYPES[path.extname(file)] || 'application/octet-stream');
-    res.setHeader('X-Content-Type-Options', 'nosniff');
+    require('./lib/security').apply(res);
     fs.createReadStream(file).pipe(res);
   });
 }
